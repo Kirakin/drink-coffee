@@ -128,56 +128,63 @@ const CoffeeOrderPage = ({ coffeeOfferings, cart, addToCart, removeFromCart, car
             )}
 
             {currentOrderView === 'cart' && (
-                <aside className="w-full bg-white shadow-xl rounded-2xl p-8 flex flex-col">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-8 border-b-2 pb-4 border-blue-200">Your Cart</h2>
-                    <div id="cart-items" className="flex-1 space-y-5 scroll-y-auto max-h-[500px] pr-2">
-                        {cart.length === 0 ? (
-                            <p id="empty-cart-message" className="text-gray-500 text-center py-10 text-lg">Your cart is empty. Add some coffee!</p>
-                        ) : (
-                            cart.map(item => (
-                                <div key={item.id} className="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-100 transition-all duration-200 hover:bg-gray-100">
-                                    <div className="flex-1">
-                                        <h4 className="font-semibold text-gray-900 text-lg">{item.name}</h4>
-                                        <p className="text-sm text-gray-600">Qty: {item.quantity} x ETB {item.price.toFixed(2)}</p>
-                                    </div>
-                                    <span className="font-bold text-gray-800 text-lg">ETB {(item.price * item.quantity).toFixed(2)}</span>
-                                    <button
-                                        onClick={() => handleRemoveFromCart(item.id)}
-                                        className="ml-4 text-red-500 hover:text-red-700 transition duration-200 p-2 rounded-full hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300"
-                                        title="Remove from cart"
-                                    >
-                                        {/* Delete Icon (SVG) */}
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                    <div className="mt-8 pt-6 border-t-2 border-blue-200">
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="text-xl font-semibold text-gray-800">Subtotal:</span>
-                            <span className="text-xl font-bold text-gray-700">ETB {cartSubtotal.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between items-center mb-4">
-                            <span className="text-xl font-semibold text-gray-800">VAT (15%):</span>
-                            <span className="text-xl font-bold text-red-600">ETB {vatAmount.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between items-center mb-6">
-                            <span className="text-2xl font-bold text-gray-800">Total:</span>
-                            <span id="cart-total" className="text-3xl font-extrabold text-green-600">ETB {cartTotal.toFixed(2)}</span>
-                        </div>
-                        <button
-                            onClick={handleCheckout}
-                            className="w-full bg-indigo-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-indigo-700 transition duration-300 shadow-xl transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-indigo-600"
-                            disabled={cart.length === 0}
-                        >
-                            Place Order
-                        </button>
-                    </div>
-                </aside>
-            )}
+  <aside className="w-full bg-white shadow-xl rounded-2xl p-8 flex flex-col" style={{ maxHeight: '80vh' }}>
+    <h2 className="text-3xl font-bold text-gray-800 mb-6">Your Cart</h2>
+    
+    {/* Scrollable Cart Items */}
+    <div className="flex-1 overflow-y-auto pr-2 mb-4">
+      {cart.length === 0 ? (
+        <p className="text-gray-500 text-center py-10 text-lg">Your cart is empty. Add some coffee!</p>
+      ) : (
+        <div className="space-y-4">
+          {cart.map(item => (
+            <div key={item.id} className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900">{item.name}</h4>
+                <p className="text-sm text-gray-600">Qty: {item.quantity} x ETB {item.price.toFixed(2)}</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="font-bold text-gray-800">ETB {(item.price * item.quantity).toFixed(2)}</span>
+                <button
+                  onClick={() => handleRemoveFromCart(item.id)}
+                  className="text-red-500 hover:text-red-700"
+                  title="Remove"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    {/* Fixed Order Summary */}
+    <div className="border-t-2 border-gray-200 pt-4">
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-lg font-semibold">Subtotal:</span>
+        <span className="text-lg font-bold">ETB {cartSubtotal.toFixed(2)}</span>
+      </div>
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-lg font-semibold">VAT (15%):</span>
+        <span className="text-lg font-bold text-red-600">ETB {vatAmount.toFixed(2)}</span>
+      </div>
+      <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-200">
+        <span className="text-xl font-bold">Total:</span>
+        <span className="text-2xl font-extrabold text-green-600">ETB {cartTotal.toFixed(2)}</span>
+      </div>
+      <button
+        onClick={handleCheckout}
+        className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-bold text-lg mt-6 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={cart.length === 0}
+      >
+        Place Order
+      </button>
+    </div>
+  </aside>
+)}
 
             {/* Notification Message Box */}
             <div
