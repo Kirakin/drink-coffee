@@ -85,13 +85,23 @@ const Icon = ({ name, size = 24, weight = "fill", className = "" }) => {
             </svg>
         ),
         'heart-fill': ( // Filled heart icon for favorites (now red)
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 256 256" fill="#EF4444"> {/* Changed fill to red */}
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 256 256" fill="#EF4444">
                 <path d="M224 96c-1.67 44.25-34.82 76.53-80 100.81C107.18 172.53 74.34 140.25 72 96a64 64 0 0 1 128 0Z"></path>
             </svg>
         ),
         'arrow-left': (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 256 256" fill="currentColor">
                 <path d="M224 128a8 8 0 0 1-8 8H59.31l58.35 58.34a8 8 0 0 1-11.32 11.32l-72-72a8 8 0 0 1 0-11.32l72-72a8 8 0 0 1 11.32 11.32L59.31 120H216a8 8 0 0 1 8 8Z"></path>
+            </svg>
+        ),
+        'minus': ( // Minus icon for decreasing quantity
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 256 256" fill="currentColor">
+                <path d="M216 128a8 8 0 0 1-8 8H48a8 8 0 0 1 0-16h160a8 8 0 0 1 8 8Z"></path>
+            </svg>
+        ),
+        'plus': ( // Plus icon for increasing quantity
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 256 256" fill="currentColor">
+                <path d="M216 128a8 8 0 0 1-8 8H136v72a8 8 0 0 1-16 0v-72H48a8 8 0 0 1 0-16h72V48a8 8 0 0 1 16 0v72h72a8 8 0 0 1 8 8Z"></path>
             </svg>
         )
     };
@@ -206,7 +216,7 @@ const AuthForm = ({ type, onAuthSuccess, onSwitchMode }) => {
 const FavoritesPage = ({ favorites, removeFromFavorites }) => {
     return (
         <section className="flex-1 bg-white shadow-xl rounded-2xl p-8 w-full">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8 border-b-2 pb-4 border-red-200">Your Favorite Coffees</h2> {/* Changed border color */}
+            <h2 className="text-3xl font-bold text-gray-800 mb-8 border-b-2 pb-4 border-red-200">Your Favorite Coffees</h2>
             {favorites.length === 0 ? (
                 <p className="text-gray-500 text-center py-10 text-lg">You haven't added any favorites yet!</p>
             ) : (
@@ -223,7 +233,7 @@ const FavoritesPage = ({ favorites, removeFromFavorites }) => {
                                 <span className="text-2xl font-extrabold text-green-700">ETB {coffee.price.toFixed(2)}</span>
                                 <button
                                     onClick={() => removeFromFavorites(coffee.id)}
-                                    className="text-red-500 hover:text-red-700 transition duration-300 transform hover:scale-110 active:scale-90" // Changed to red
+                                    className="text-red-500 hover:text-red-700 transition duration-300 transform hover:scale-110 active:scale-90"
                                     title="Remove from Favorites"
                                 >
                                     <Icon name="heart-fill" size={32} />
@@ -239,7 +249,7 @@ const FavoritesPage = ({ favorites, removeFromFavorites }) => {
 
 
 // CoffeeOrderPage Component: Contains the menu and cart logic
-const CoffeeOrderPage = ({ coffeeOfferings, cart, addToCart, removeFromCart, cartSubtotal, vatAmount, cartTotal, handleCheckout, favorites, addToFavorites, removeFromFavorites }) => {
+const CoffeeOrderPage = ({ coffeeOfferings, cart, addToCart, decreaseQuantity, cartSubtotal, vatAmount, cartTotal, handleCheckout, favorites, addToFavorites, removeFromFavorites }) => {
     // State for notification message specific to this page's actions
     const [notification, setNotification] = useState({ message: '', visible: false, type: 'success' });
     // State to control which view is active: 'menu', 'cart', or 'favorites'
@@ -261,22 +271,39 @@ const CoffeeOrderPage = ({ coffeeOfferings, cart, addToCart, removeFromCart, car
     }, [notification.visible]);
 
 
-    // Override addToCart and removeFromCart to include notifications
+    // Override addToCart to include notifications
     const handleAddToCart = (coffeeId) => {
         const coffeeToAdd = coffeeOfferings.find(item => item.id === coffeeId);
-        addToCart(coffeeId);
+        addToCart(coffeeId); // Use the prop function
         if (coffeeToAdd) {
             showNotification(`${coffeeToAdd.name} added to cart!`, 'success');
         }
     };
 
-    const handleRemoveFromCart = (coffeeId) => {
-        const itemToRemove = cart.find(item => item.id === coffeeId);
-        removeFromCart(coffeeId);
-        if (itemToRemove) {
-            showNotification(`${itemToRemove.name} removed from cart.`, 'error');
+    // Modified function to decrease quantity or remove item from cart
+    const handleDecreaseQuantity = (coffeeId) => {
+        const existingItem = cart.find(item => item.id === coffeeId);
+        if (existingItem) {
+            if (existingItem.quantity > 1) {
+                decreaseQuantity(coffeeId, false); // Pass false to indicate not a full removal
+                showNotification(`${existingItem.name} quantity decreased.`, 'error');
+            } else {
+                // If quantity is 1, remove the item completely
+                decreaseQuantity(coffeeId, true); // Pass true to indicate full removal
+                showNotification(`${existingItem.name} removed from cart.`, 'error');
+            }
         }
     };
+
+    // New function to increase quantity from cart
+    const handleIncreaseQuantity = (coffeeId) => {
+        const coffeeToIncrease = coffeeOfferings.find(item => item.id === coffeeId);
+        addToCart(coffeeId); // Re-use addToCart logic
+        if (coffeeToIncrease) {
+            showNotification(`${coffeeToIncrease.name} quantity increased!`, 'success');
+        }
+    };
+
 
     const handleToggleFavorite = (coffeeId) => {
         const coffeeItem = coffeeOfferings.find(item => item.id === coffeeId);
@@ -376,13 +403,18 @@ const CoffeeOrderPage = ({ coffeeOfferings, cart, addToCart, removeFromCart, car
                                         <div className="flex items-center gap-4">
                                             <span className="font-bold text-gray-800">ETB {(item.price * item.quantity).toFixed(2)}</span>
                                             <button
-                                                onClick={() => handleRemoveFromCart(item.id)}
-                                                className="text-red-500 hover:text-red-700"
-                                                title="Remove"
+                                                onClick={() => handleDecreaseQuantity(item.id)}
+                                                className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition-colors"
+                                                title="Decrease Quantity"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                </svg>
+                                                <Icon name="minus" size={20} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleIncreaseQuantity(item.id)} // New plus button
+                                                className="text-green-500 hover:text-green-700 p-2 rounded-full hover:bg-green-100 transition-colors"
+                                                title="Increase Quantity"
+                                            >
+                                                <Icon name="plus" size={20} />
                                             </button>
                                         </div>
                                     </div>
@@ -630,7 +662,24 @@ const App = () => {
         });
     };
 
-    // Function to remove an item from the cart
+    // Function to decrease quantity or remove item from cart
+    const decreaseQuantity = (coffeeId, fullRemove = false) => {
+        setCart(prevCart => {
+            const existingItem = prevCart.find(item => item.id === coffeeId);
+            if (!existingItem) return prevCart; // Should not happen
+
+            if (fullRemove || existingItem.quantity === 1) {
+                return prevCart.filter(item => item.id !== coffeeId);
+            } else {
+                return prevCart.map(item =>
+                    item.id === coffeeId ? { ...item, quantity: item.quantity - 1 } : item
+                );
+            }
+        });
+    };
+
+
+    // Function to remove an item from the cart (full removal) - kept for consistency if needed elsewhere
     const removeFromCart = (coffeeId) => {
         setCart(prevCart => prevCart.filter(item => item.id !== coffeeId));
     };
@@ -717,7 +766,7 @@ const App = () => {
                             coffeeOfferings={currentCoffeeOfferings}
                             cart={cart}
                             addToCart={addToCart}
-                            removeFromCart={removeFromCart}
+                            decreaseQuantity={decreaseQuantity} // Pass the new decreaseQuantity function
                             cartSubtotal={cartSubtotal}
                             vatAmount={vatAmount}
                             cartTotal={cartTotal}
